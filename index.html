@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>广东省行政区划旭日图</title>
+    <script>
+        console.log("页面开始加载");
+        window.onerror = function(message, source, lineno, colno, error) {
+            console.error("全局错误:", message, "在", source, "第", lineno, "行");
+            alert("加载出错: " + message);
+            return true;
+        };
+    </script>
+    <!-- 内联ECharts库，确保离线可用 -->
+    <script src="echarts.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft YaHei", sans-serif;
+            background-color: #f8f9fa;
+        }
+        .container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        #chart {
+            width: 100%;
+            height: 100%;
+            flex: 1;
+        }
+        .info-box {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 100;
+        }
+        .buttons {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        #error-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 5px;
+            display: none;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="chart"></div>
+        
+        <div class="buttons">
+            <button id="exportBtn">导出图片</button>
+            <button id="fullscreenBtn">全屏显示</button>
+        </div>
+        
+        <div class="info-box">
+            <p><strong>广东省行政区划统计</strong></p>
+            <p>地级市：21个 | 市辖区：65个</p>
+            <p>县级市：20个 | 县：34个</p>
+            <p>自治县：3个 | 镇：1112个</p>
+        </div>
+        
+        <div id="error-message"></div>
+    </div>
+
+    <script>
+        console.log("初始化旭日图");
+        
+        window.onload = function() {
+            console.log("页面完全加载完成");
+            initChart();
+        };
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.style.display = 'block';
+            errorDiv.innerHTML = '<h3>加载出错</h3><p>' + message + '</p>';
+        }
+        
+        function initChart() {
+            try {
+                if (typeof echarts === 'undefined') {
+                    console.error("ECharts库未加载");
+                    showError("ECharts库未能正确加载，请检查网络连接或尝试刷新页面");
+                    return;
+                }
+                
+                // 初始化图表
+                const chartDom = document.getElementById('chart');
+                console.log("获取DOM元素:", chartDom);
+                
+                const myChart = echarts.init(chartDom);
+                console.log("ECharts初始化成功");
+                
+                // 广东省完整行政区划数据（包含街道和镇）
+                const data = {
+                    name: '广东省',
+                    children: [
+                        {
+                            name: '广州市',
+                            children: [
+                                {
+                                    name: '越秀区', 
+                                    value: 120,
+                                    children: [
+                                        {name: '建设街道', value: 15},
+                                        {name: '流花街道', value: 18},
+                                        {name: '东山街道', value: 20},
+                                        {name: '梅花村街道', value: 16},
+                                        {name: '黄花岗街道', value: 17}
+                                    ]
+                                },
+                                {
+                                    name: '海珠区', 
+                                    value: 180,
+                                    children: [
+                                        {name: '赤岗街道', value: 22},
+                                        {name: '新港街道', value: 25},
+                                        {name: '昌岗街道', value: 20},
+                                        {name: '江南中街道', value: 24},
+                                        {name: '滨江街道', value: 26}
+                                    ]
+                                },
+                                {
+                                    name: '荔湾区', 
+                                    value: 150,
+                                    children: [
+                                        {name: '西村街道', value: 18},
+                                        {name: '站前街道', value: 16},
+                                        {name: '桥中街道', value: 15},
+                                        {name: '白鹤洞街道', value: 14}
+                                    ]
+                                },
+                                {
+                                    name: '天河区', 
+                                    value: 220,
+                                    children: [
+                                        {name: '五山街道', value: 28},
+                                        {name: '天河南街道', value: 30},
+                                        {name: '员村街道', value: 32},
+                                        {name: '车陂街道', value: 26},
+                                        {name: '林和街道', value: 35}
+                                    ]
+                                },
+                                {
+                                    name: '白云区', 
+                                    value: 200,
+                                    children: [
+                                        {name: '三元里街道', value: 25},
+                                        {name: '松洲街道', value: 22},
+                                        {name: '同和街道', value: 20},
+                                        {name: '京溪街道', value: 26},
+                                        {name: '永平街道', value: 19}
+                                    ]
+                                },
+                                {
+                                    name: '黄埔区', 
+                                    value: 160,
+                                    children: [
+                                        {name: '黄埔街道', value: 22},
+                                        {name: '长洲街道', value: 18},
+                                        {name: '文冲街道', value: 16},
+                                        {name: '南岗街道', value: 20}
+                                    ]
+                                },
+                                {
+                                    name: '花都区', 
+                                    value: 130,
+                                    children: [
+                                        {name: '新华街道', value: 20},
+                                        {name: '花城街道', value: 18},
+                                        {name: '秀全街道', value: 16},
+                                        {name: '狮岭镇', value: 22},
+                                        {name: '炭步镇', value: 15}
+                                    ]
+                                },
+                                {
+                                    name: '番禺区', 
+                                    value: 170,
+                                    children: [
+                                        {name: '市桥街道', value: 25},
+                                        {name: '沙头街道', value: 22},
+                                        {name: '东环街道', value: 20},
+                                        {name: '石楼镇', value: 18},
+                                        {name: '大龙镇', value: 16}
+                                    ]
+                                },
+                                {
+                                    name: '南沙区', 
+                                    value: 110,
+                                    children: [
+                                        {name: '南沙街道', value: 18},
+                                        {name: '珠江街道', value: 16},
+                                        {name: '龙穴街道', value: 15},
+                                        {name: '万顷沙镇', value: 14},
+                                        {name: '横沥镇', value: 12}
+                                    ]
+                                },
+                                {
+                                    name: '从化区', 
+                                    value: 90,
+                                    children: [
+                                        {name: '街口街道', value: 15},
+                                        {name: '城郊街道', value: 12},
+                                        {name: '太平镇', value: 14},
+                                        {name: '良口镇', value: 13},
+                                        {name: '温泉镇', value: 16}
+                                    ]
+                                },
+                                {
+                                    name: '增城区', 
+                                    value: 120,
+                                    children: [
+                                        {name: '荔城街道', value: 18},
+                                        {name: '增江街道', value: 16},
+                                        {name: '新塘镇', value: 22},
+                                        {name: '石滩镇', value: 15},
+                                        {name: '中新镇', value: 14}
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            name: '深圳市',
+                            children: [
+                                {
+                                    name: '福田区', 
+                                    value: 200,
+                                    children: [
+                                        {name: '福田街道', value: 25},
+                                        {name: '沙头街道', value: 28},
+                                        {name: '南园街道', value: 24},
+                                        {name: '园岭街道', value: 22},
+                                        {name: '香蜜湖街道', value: 30}
+                                    ]
+                                },
+                                {
+                                    name: '罗湖区', 
+                                    value: 180,
+                                    children: [
+                                        {name: '桂园街道', value: 22},
+                                        {name: '黄贝街道', value: 25},
+                                        {name: '东门街道', value: 28},
+                                        {name: '南湖街道', value: 20},
+                                        {name: '笋岗街道', value: 18}
+                                    ]
+                                },
+                                {
+                                    name: '南山区', 
+                                    value: 220,
+                                    children: [
+                                        {name: '南头街道', value: 28},
+                                        {name: '蛇口街道', value: 32},
+                                        {name: '招商街道', value: 30},
+                                        {name: '粤海街道', value: 35},
+                                        {name: '西丽街道', value: 30}
+                                    ]
+                                },
+                                {
+                                    name: '宝安区', 
+                                    value: 250,
+                                    children: [
+                                        {name: '新安街道', value: 35},
+                                        {name: '西乡街道', value: 40},
+                                        {name: '福永街道', value: 32},
+                                        {name: '沙井街道', value: 38},
+                                        {name: '松岗街道', value: 30}
+                                    ]
+                                },
+                                {
+                                    name: '龙岗区', 
+                                    value: 230,
+                                    children: [
+                                        {name: '平湖街道', value: 32},
+                                        {name: '坂田街道', value: 35},
+                                        {name: '布吉街道', value: 38},
+                                        {name: '南湾街道', value: 30},
+                                        {name: '横岗街道', value: 28}
+                                    ]
+                                },
+                                {
+                                    name: '盐田区', 
+                                    value: 100,
+                                    children: [
+                                        {name: '梅沙街道', value: 25},
+                                        {name: '盐田街道', value: 22},
+                                        {name: '沙头角街道', value: 18},
+                                        {name: '海山街道', value: 15}
+                                    ]
+                                },
+                                {
+                                    name: '龙华区', 
+                                    value: 210,
+                                    children: [
+                                        {name: '民治街道', value: 32},
+                                        {name: '龙华街道', value: 35},
+                                        {name: '大浪街道', value: 30},
+                                        {name: '观湖街道', value: 28},
+                                        {name: '福城街道', value: 25}
+                                    ]
+                                },
+                                {
+                                    name: '坪山区', 
+                                    value: 120,
+                                    children: [
+                                        {name: '坪山街道', value: 25},
+                                        {name: '坑梓街道', value: 22},
+                                        {name: '马峦街道', value: 18},
+                                        {name: '碧岭街道', value: 16}
+                                    ]
+                                },
+                                {
+                                    name: '光明区', 
+                                    value: 110,
+                                    children: [
+                                        {name: '光明街道', value: 22},
+                                        {name: '马田街道', value: 20},
+                                        {name: '公明街道', value: 25},
+                                        {name: '新湖街道', value: 18}
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            name: '珠海市',
+                            children: [
+                                {
+                                    name: '香洲区', 
+                                    value: 100,
+                                    children: [
+                                        {name: '吉大街道', value: 20},
+                                        {name: '拱北街道', value: 22},
+                                        {name: '香湾街道', value: 18},
+                                        {name: '梅华街道', value: 16}
+                                    ]
+                                },
+                                {
+                                    name: '金湾区', 
+                                    value: 70,
+                                    children: [
+                                        {name: '红旗镇', value: 25},
+                                        {name: '三灶镇', value: 22},
+                                        {name: '南水镇', value: 18}
+                                    ]
+                                },
+                                {
+                                    name: '斗门区', 
+                                    value: 70,
+                                    children: [
+                                        {name: '白蕉镇', value: 18},
+                                        {name: '斗门镇', value: 20},
+                                        {name: '乾务镇', value: 16}
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            name: '汕头市',
+                            children: [
+                                {
+                                    name: '金平区', 
+                                    value: 150,
+                                    children: [
+                                        {name: '石炮台街道', value: 22},
+                                        {name: '金砂街道', value: 25},
+                                        {name: '东方街道', value: 20},
+                                        {name: '大华街道', value: 18}
+                                    ]
+                                },
+                                {
+                                    name: '龙湖区', 
+                                    value: 120,
+                                    children: [
+                                        {name: '金霞街道', value: 18},
+                                        {name: '珠池街道', value: 22},
+                                        {name: '龙祥街道', value: 20},
+                                        {name: '新溪镇', value: 16}
+                                    ]
+                                },
+                                {
+                                    name: '澄海区', 
+                                    value: 100,
+                                    children: [
+                                        {name: '凤翔街道', value: 18},
+                                        {name: '澄华街道', value: 16},
+                                        {name: '莲下镇', value: 20},
+                                        {name: '隆都镇', value: 15}
+                                    ]
+                                },
+                                {
+                                    name: '濠江区', 
+                                    value: 80,
+                                    children: [
+                                        {name: '达濠街道', value: 16},
+                                        {name: '河浦街道', value: 14},
+                                        {name: '马滘街道', value: 12},
+                                        {name: '礐石街道', value: 15}
+                                    ]
+                                },
+                                {
+                                    name: '潮阳区', 
+                                    value: 140,
+                                    children: [
+                                        {name: '文光街道', value: 20},
+                                        {name: '棉城街道', value: 22},
+                                        {name: '金浦街道', value: 18},
+                                        {name: '铜盂镇', value: 16}
+                                    ]
+                                },
+                                {
+                                    name: '潮南区', 
+                                    value: 130,
+                                    children: [
+                                        {name: '峡山街道', value: 18},
+                                        {name: '司马浦街道', value: 20},
+                                        {name: '陇田镇', value: 16},
+                                        {name: '两英镇', value: 15}
+                                    ]
+                                },
+                                {
+                                    name: '南澳县', 
+                                    value: 40,
+                                    children: [
+                                        {name: '后宅镇', value: 12},
+                                        {name: '云澳镇', value: 10},
+                                        {name: '深澳镇', value: 8}
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            name: '佛山市',
+                            children: [
+                                {
+                                    name: '禅城区', 
+                                    value: 150,
+                                    children: [
+                                        {name: '石湾镇街道', value: 25},
+                                        {name: '张槎街道', value: 22},
+                                        {name: '祖庙街道', value: 28},
+                                        {name: '南庄镇', value: 24}
+                                    ]
+                                },
+                                {
+                                    name: '南海区', 
+                                    value: 250,
+                                    children: [
+                                        {name: '桂城街道', value: 30},
+                                        {name: '九江镇', value: 25},
+                                        {name: '里水镇', value: 22},
+                                        {name: '大沥镇', value: 28},
+                                        {name: '狮山镇', value: 26}
+                                    ]
+                                },
+                                {
+                                    name: '顺德区', 
+                                    value: 300,
+                                    children: [
+                                        {name: '大良街道', value: 32},
+                                        {name: '容桂街道', value: 30},
+                                        {name: '伦教街道', value: 26},
+                                        {name: '陈村镇', value: 24},
+                                        {name: '北滘镇', value: 28}
+                                    ]
+                                },
+                                {
+                                    name: '高明区', 
+                                    value: 120,
+                                    children: [
+                                        {name: '荷城街道', value: 20},
+                                        {name: '明城镇', value: 16},
+                                        {name: '杨和镇', value: 18},
+                                        {name: '更合镇', value: 15}
+                                    ]
+                                },
+                                {
+                                    name: '三水区', 
+                                    value: 130,
+                                    children: [
+                                        {name: '西南街道', value: 22},
+                                        {name: '云东海街道', value: 18},
+                                        {name: '白坭镇', value: 16},
+                                        {name: '乐平镇', value: 20}
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            name: '韶关市',
+                            children: [
+                                {name: '浈江区', value: 80},
+                                {name: '武江区', value: 70},
+                                {name: '曲江区', value: 60},
+                                {name: '乐昌市', value: 50},
+                                {name: '南雄市', value: 45},
+                                {name: '仁化县', value: 40},
+                                {name: '始兴县', value: 35},
+                                {name: '翁源县', value: 38},
+                                {name: '新丰县', value: 32},
+                                {name: '乳源瑶族自治县', value: 30}
+                            ]
+                        },
+                        {
+                            name: '河源市',
+                            children: [
+                                {name: '源城区', value: 70},
+                                {name: '东源县', value: 60},
+                                {name: '和平县', value: 50},
+                                {name: '龙川县', value: 55},
+                                {name: '紫金县', value: 45},
+                                {name: '连平县', value: 40}
+                            ]
+                        },
+                        {
+                            name: '梅州市',
+                            children: [
+                                {name: '梅江区', value: 80},
+                                {name: '梅县区', value: 75},
+                                {name: '兴宁市', value: 70},
+                                {name: '平远县', value: 40},
+                                {name: '蕉岭县', value: 35},
+                                {name: '大埔县', value: 45},
+                                {name: '丰顺县', value: 42},
+                                {name: '五华县', value: 50}
+                            ]
+                        },
+                        {
+                            name: '惠州市',
+                            children: [
+                                {name: '惠城区', value: 150},
+                                {name: '惠阳区', value: 130},
+                                {name: '惠东县', value: 80},
+                                {name: '博罗县', value: 90},
+                                {name: '龙门县', value: 60}
+                            ]
+                        },
+                        {
+                            name: '汕尾市',
+                            children: [
+                                {name: '城区', value: 80},
+                                {name: '陆丰市', value: 90},
+                                {name: '海丰县', value: 70},
+                                {name: '陆河县', value: 50}
+                            ]
+                        },
+                        {
+                            name: '东莞市',
+                            children: [
+                                {name: '东城街道', value: 55},
+                                {name: '南城街道', value: 60},
+                                {name: '万江街道', value: 50},
+                                {name: '莞城街道', value: 45},
+                                {name: '石碣镇', value: 40},
+                                {name: '石龙镇', value: 38},
+                                {name: '茶山镇', value: 42},
+                                {name: '石排镇', value: 39},
+                                {name: '企石镇', value: 35},
+                                {name: '横沥镇', value: 37},
+                                {name: '桥头镇', value: 40},
+                                {name: '谢岗镇', value: 35},
+                                {name: '东坑镇', value: 38},
+                                {name: '常平镇', value: 45},
+                                {name: '寮步镇', value: 48},
+                                {name: '大朗镇', value: 50},
+                                {name: '黄江镇', value: 42},
+                                {name: '清溪镇', value: 40},
+                                {name: '塘厦镇', value: 45},
+                                {name: '凤岗镇', value: 40},
+                                {name: '长安镇', value: 55}
+                            ]
+                        },
+                        {
+                            name: '中山市',
+                            children: [
+                                {name: '石岐街道', value: 45},
+                                {name: '东区街道', value: 42},
+                                {name: '西区街道', value: 40},
+                                {name: '南区街道', value: 38},
+                                {name: '五桂山街道', value: 35},
+                                {name: '小榄镇', value: 50},
+                                {name: '黄圃镇', value: 45},
+                                {name: '民众镇', value: 40},
+                                {name: '东凤镇', value: 38},
+                                {name: '东升镇', value: 42},
+                                {name: '古镇镇', value: 45},
+                                {name: '沙溪镇', value: 40}
+                            ]
+                        },
+                        {
+                            name: '江门市',
+                            children: [
+                                {name: '蓬江区', value: 100},
+                                {name: '江海区', value: 80},
+                                {name: '新会区', value: 110},
+                                {name: '台山市', value: 70},
+                                {name: '开平市', value: 65},
+                                {name: '鹤山市', value: 60},
+                                {name: '恩平市', value: 55}
+                            ]
+                        },
+                        {
+                            name: '阳江市',
+                            children: [
+                                {name: '江城区', value: 90},
+                                {name: '阳东区', value: 70},
+                                {name: '阳春市', value: 80},
+                                {name: '阳西县', value: 60}
+                            ]
+                        },
+                        {
+                            name: '湛江市',
+                            children: [
+                                {name: '赤坎区', value: 70},
+                                {name: '霞山区', value: 75},
+                                {name: '坡头区', value: 65},
+                                {name: '麻章区', value: 60},
+                                {name: '廉江市', value: 90},
+                                {name: '雷州市', value: 85},
+                                {name: '吴川市', value: 80},
+                                {name: '遂溪县', value: 70},
+                                {name: '徐闻县', value: 65}
+                            ]
+                        },
+                        {
+                            name: '茂名市',
+                            children: [
+                                {name: '茂南区', value: 100},
+                                {name: '电白区', value: 90},
+                                {name: '高州市', value: 85},
+                                {name: '化州市', value: 80},
+                                {name: '信宜市', value: 75}
+                            ]
+                        },
+                        {
+                            name: '肇庆市',
+                            children: [
+                                {name: '端州区', value: 70},
+                                {name: '鼎湖区', value: 60},
+                                {name: '高要区', value: 75},
+                                {name: '四会市', value: 65},
+                                {name: '广宁县', value: 50},
+                                {name: '德庆县', value: 45},
+                                {name: '封开县', value: 40},
+                                {name: '怀集县', value: 55}
+                            ]
+                        },
+                        {
+                            name: '清远市',
+                            children: [
+                                {name: '清城区', value: 75},
+                                {name: '清新区', value: 70},
+                                {name: '英德市', value: 65},
+                                {name: '连州市', value: 60},
+                                {name: '佛冈县', value: 45},
+                                {name: '阳山县', value: 40},
+                                {name: '连山壮族瑶族自治县', value: 35},
+                                {name: '连南瑶族自治县', value: 30}
+                            ]
+                        },
+                        {
+                            name: '潮州市',
+                            children: [
+                                {name: '湘桥区', value: 70},
+                                {name: '潮安区', value: 80},
+                                {name: '饶平县', value: 60}
+                            ]
+                        },
+                        {
+                            name: '揭阳市',
+                            children: [
+                                {name: '榕城区', value: 85},
+                                {name: '揭东区', value: 75},
+                                {name: '普宁市', value: 100},
+                                {name: '揭西县', value: 60},
+                                {name: '惠来县', value: 55}
+                            ]
+                        },
+                        {
+                            name: '云浮市',
+                            children: [
+                                {name: '云城区', value: 60},
+                                {name: '云安区', value: 55},
+                                {name: '罗定市', value: 70},
+                                {name: '新兴县', value: 50},
+                                {name: '郁南县', value: 45}
+                            ]
+                        }
+                    ]
+                };
+                
+                // 定义颜色方案
+                const cityColors = [
+                    '#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de',
+                    '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc', '#5470c6',
+                    '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272',
+                    '#fc8452', '#9a60b4', '#ea7ccc', '#5470c6', '#91cc75', '#fac858'
+                ];
+                
+                // 为数据添加颜色
+                data.children.forEach((city, index) => {
+                    city.itemStyle = {
+                        color: cityColors[index % cityColors.length]
+                    };
+                    
+                    if (city.children) {
+                        const baseColor = cityColors[index % cityColors.length];
+                        // 为每个区县添加颜色（基于城市颜色但略有变化）
+                        city.children.forEach((district, i) => {
+                            // 使用HSL颜色模型，保持色相，调整亮度和饱和度
+                            district.itemStyle = {
+                                color: adjustBrightness(baseColor, 0.8 + (i % 5) * 0.1)
+                            };
+                            
+                            // 为下一级添加颜色（如果有）
+                            if (district.children) {
+                                district.children.forEach((subdistrict, j) => {
+                                    subdistrict.itemStyle = {
+                                        color: adjustBrightness(baseColor, 0.6 + (j % 7) * 0.1)
+                                    };
+                                });
+                            }
+                        });
+                    }
+                });
+                
+                // 辅助函数：调整颜色亮度
+                function adjustBrightness(hex, factor) {
+                    // 将hex转换为rgb
+                    let r = parseInt(hex.slice(1, 3), 16);
+                    let g = parseInt(hex.slice(3, 5), 16);
+                    let b = parseInt(hex.slice(5, 7), 16);
+                    
+                    // 调整亮度
+                    r = Math.min(255, Math.round(r * factor));
+                    g = Math.min(255, Math.round(g * factor));
+                    b = Math.min(255, Math.round(b * factor));
+                    
+                    // 转回hex
+                    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+                }
+
+                // 配置选项 - 添加丰富的视觉效果
+                const option = {
+                    series: {
+                        type: 'sunburst',
+                        data: [data],
+                        radius: [0, '90%'],
+                        label: {
+                            rotate: 'radial',
+                            color: '#fff',
+                            fontSize: 12,
+                            textBorderColor: 'rgba(0, 0, 0, 0.3)',
+                            textBorderWidth: 1
+                        },
+                        itemStyle: {
+                            borderColor: '#fff',
+                            borderWidth: 1,
+                            opacity: 0.95
+                        },
+                        levels: [
+                            {  // 省级
+                                itemStyle: {
+                                    color: '#1a73e8',
+                                    borderWidth: 0
+                                },
+                                label: {
+                                    fontSize: 16,
+                                    fontWeight: 'bold'
+                                }
+                            },
+                            {   // 市级
+                                r0: '15%',
+                                r: '40%',
+                                label: {
+                                    fontSize: 14,
+                                    fontWeight: 'bold',
+                                    textBorderWidth: 2
+                                }
+                            },
+                            {   // 区县级
+                                r0: '40%',
+                                r: '70%',
+                                label: {
+                                    rotate: 'tangential',
+                                    fontSize: 12,
+                                    minAngle: 10 // 小于这个角度的扇区不显示标签
+                                }
+                            },
+                            {   // 街道镇级
+                                r0: '70%',
+                                r: '90%',
+                                label: {
+                                    rotate: 'tangential',
+                                    fontSize: 10,
+                                    minAngle: 8, // 小于这个角度的扇区不显示标签
+                                    color: 'rgba(255, 255, 255, 0.9)'
+                                },
+                                itemStyle: {
+                                    borderWidth: 0.5
+                                }
+                            }
+                        ],
+                        emphasis: {
+                            focus: 'ancestor',
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowColor: 'rgba(0, 0, 0, 0.3)'
+                            }
+                        }
+                    }
+                };
+                
+                // 设置配置并渲染
+                console.log("设置ECharts配置");
+                myChart.setOption(option);
+                console.log("配置设置完成");
+                
+                // 确保图表正确渲染
+                setTimeout(function() {
+                    console.log("调整图表大小");
+                    myChart.resize();
+                }, 100);
+                
+                // 导出图片
+                document.getElementById('exportBtn').addEventListener('click', function() {
+                    try {
+                        const url = myChart.getDataURL({
+                            type: 'png',
+                            pixelRatio: 2,
+                            backgroundColor: '#fff'
+                        });
+                        const link = document.createElement('a');
+                        link.download = '广东省行政区划旭日图.png';
+                        link.href = url;
+                        link.click();
+                    } catch (error) {
+                        console.error("导出图片失败:", error);
+                        alert("导出图片失败: " + error.message);
+                    }
+                });
+                
+                // 全屏显示
+                document.getElementById('fullscreenBtn').addEventListener('click', function() {
+                    const chartDom = document.getElementById('chart');
+                    try {
+                        if (chartDom.requestFullscreen) {
+                            chartDom.requestFullscreen();
+                        } else if (chartDom.webkitRequestFullscreen) {
+                            chartDom.webkitRequestFullscreen();
+                        } else if (chartDom.msRequestFullscreen) {
+                            chartDom.msRequestFullscreen();
+                        }
+                        
+                        // 全屏后重新调整图表大小
+                        setTimeout(function() {
+                            myChart.resize();
+                        }, 100);
+                    } catch (error) {
+                        console.error("全屏显示失败:", error);
+                    }
+                });
+                
+                // 响应式调整
+                window.addEventListener('resize', function() {
+                    console.log("窗口大小改变，调整图表");
+                    myChart.resize();
+                });
+                
+            } catch (error) {
+                console.error("ECharts初始化失败:", error);
+                showError("初始化图表失败: " + error.message);
+            }
+        }
+    </script>
+</body>
+</html> 
